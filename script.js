@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let meowthTaunting = false;
     let idleLevel = 0;
     let shuffleCount = 2;
-    const COMBO_TIMEOUT = 7000;
+    const COMBO_TIMEOUT = 4000;
     
     // Board unit size in pixels (half a tile)
     const UNIT_X = 36; 
