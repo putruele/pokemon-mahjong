@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let meowthTaunting = false;
     let idleLevel = 0;
     let shuffleCount = 2;
-    const COMBO_TIMEOUT = 4000;
+    const COMBO_TIMEOUT = 3000;
     
     // Board unit size in pixels (half a tile)
     const UNIT_X = 36; 
@@ -557,7 +557,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const nowTimestamp = Date.now();
                 let doSpecialAnim = (tilesUnlocked >= requiredUnlocks);
                 
-                if (doSpecialAnim && (nowTimestamp - lastAnimTime < 2500)) {
+                if (doSpecialAnim && (nowTimestamp - lastAnimTime < 1000)) {
                     // It's a great move, but we matched too fast, skip repetitive animation!
                     doSpecialAnim = false;
                 }
