@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
     const boardEl = document.getElementById("board");
     const tilesLeftEl = document.getElementById("tiles-left");
     const btnRestart = document.getElementById("btn-restart");
@@ -12,6 +12,7 @@
     let tilesRemaining = 144;
     let comboCount = 0;
     let lastMatchTime = 0;
+    let lastAnimTime = 0;
     let lastMeowthTauntTime = 0;
     let meowthTaunting = false;
     let idleLevel = 0;
@@ -553,7 +554,17 @@
                 }
 
                 // "Good choice" = we unlocked X or more tiles! (A truly strategic move)
-                const doSpecialAnim = tilesUnlocked >= requiredUnlocks;
+                const nowTimestamp = Date.now();
+                let doSpecialAnim = (tilesUnlocked >= requiredUnlocks);
+                
+                if (doSpecialAnim && (nowTimestamp - lastAnimTime < 2500)) {
+                    // It's a great move, but we matched too fast, skip repetitive animation!
+                    doSpecialAnim = false;
+                }
+                
+                if (doSpecialAnim) {
+                    lastAnimTime = nowTimestamp;
+                }
 
                 tilesRemaining -= 2;
                 updateStats();
@@ -951,9 +962,8 @@
         
         const floaty = document.createElement("div");
         floaty.className = "floating-combo";
-        
-        let texts = ["", "", "Â¡COMBO x2!", "Â¡RÃFAGA x3!", "Â¡SÃšPER x4!", "Â¡BRUTAL x5!"];
-        floaty.innerText = texts[Math.min(comboCount, texts.length - 1)] || "Â¡DIOS x" + comboCount + "!";
+        let texts = ["", "", "¡COMBO x2!", "¡RÁFAGA x3!", "¡SÚPER x4!", "¡BRUTAL x5!"];
+        floaty.innerText = texts[Math.min(comboCount, texts.length - 1)] || "¡DIOS x" + comboCount + "!";
         
         floaty.style.left = x + "px";
         floaty.style.top = y + "px";
@@ -1082,3 +1092,4 @@
     }
 
 });
+
