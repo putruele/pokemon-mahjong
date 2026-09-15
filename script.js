@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+﻿document.addEventListener("DOMContentLoaded", () => {
     const boardEl = document.getElementById("board");
     const tilesLeftEl = document.getElementById("tiles-left");
     const btnRestart = document.getElementById("btn-restart");
@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let lastMatchTime = 0;
     let lastMeowthTauntTime = 0;
     let meowthTaunting = false;
+    let idleLevel = 0;
     let shuffleCount = 2;
     const COMBO_TIMEOUT = 7000;
     
@@ -49,9 +50,10 @@ document.addEventListener("DOMContentLoaded", () => {
         lastMatchTime = Date.now();
         lastMeowthTauntTime = Date.now();
         meowthTaunting = false;
+        idleLevel = 0;
         shuffleCount = 2;
         
-        btnShuffle.innerText = `⚡\nMezclar\n(${shuffleCount})`;
+        btnShuffle.innerText = `Ã¢Å¡Â¡\nMezclar\n(${shuffleCount})`;
         btnShuffle.disabled = false;
         btnShuffle.style.opacity = "1";
         
@@ -65,24 +67,21 @@ document.addEventListener("DOMContentLoaded", () => {
             let s = (secondsElapsed % 60).toString().padStart(2, '0');
             document.getElementById("timer").innerText = `${m}:${s}`;
             
-            // Meowth Taunt Logic (if 30 seconds without a match)
+            // --- IDLE SYSTEM ---
             if (tilesRemaining > 0) {
                 const now = Date.now();
-                if (now - Math.max(lastMatchTime, lastMeowthTauntTime) > 30000 && !meowthTaunting) {
+                const idleTime = now - Math.max(lastMatchTime, lastMeowthTauntTime);
+                
+                // Zzz particles every roughly 3 seconds after 15s idle
+                if (idleTime > 15000 && Math.random() < 0.3) {
+                    spawnZzz();
+                }
+
+                // Escalating taunts every 30 seconds
+                if (idleTime > 30000 && !meowthTaunting) {
                     meowthTaunting = true;
-                    const meowthEl = document.getElementById("meowth-taunt");
-                    if (meowthEl) {
-                        // Pick random spot on screen (20% to 80% of width/height)
-                        meowthEl.style.top = (Math.random() * 60 + 20) + "vh";
-                        meowthEl.style.left = (Math.random() * 60 + 20) + "vw";
-                        
-                        meowthEl.classList.add("peek");
-                        setTimeout(() => {
-                            meowthEl.classList.remove("peek");
-                            lastMeowthTauntTime = Date.now(); // reset ONLY the Meowth timer
-                            meowthTaunting = false;
-                        }, 3000); // laughs for 3 seconds
-                    }
+                    idleLevel++;
+                    triggerTeamRocketTaunt(idleLevel);
                 }
             }
         }, 1000);
@@ -570,6 +569,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     comboCount = 1; // start new combo
                 }
                 lastMatchTime = now;
+                
+                // --- VISUAL JUICE ---
+                // Spawn particles at center of both tiles
+                const rect1 = t.el.getBoundingClientRect();
+                const rect2 = sel.el.getBoundingClientRect();
+                spawnParticles(rect1.left + rect1.width/2, rect1.top + rect1.height/2);
+                spawnParticles(rect2.left + rect2.width/2, rect2.top + rect2.height/2);
+                
+                // Floating text and screen shake on fast match!
+                if (comboCount >= 2) {
+                    spawnFloatingCombo(comboCount, rect1.left + rect1.width/2, rect1.top - 20);
+                    triggerShake(); // Small shake for every combo hit
+                }
+                // --------------------
 
                 if (comboCount >= 4) {
                     triggerMegaCombo(comboCount);
@@ -585,7 +598,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     t.el.classList.add("matched-animated");
                     sel.el.classList.add("matched-animated");
                     
-                    // Play the Pokémon's unique cry!
+                    // Play the PokÃƒÂ©mon's unique cry!
                     const cryAudio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${t.id}.ogg`);
                     cryAudio.volume = 0.5;
                     cryAudio.play().catch(e => console.log("Audio prevented by browser:", e));
@@ -657,10 +670,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 rocketOverlay.classList.add("active");
                 setTimeout(() => {
                     rocketOverlay.classList.remove("active");
-                    endGame("¡No hay más movimientos! GAME OVER.");
+                    endGame("Ã‚Â¡No hay mÃƒÂ¡s movimientos! GAME OVER.");
                 }, 4500);
             } else {
-                endGame("¡No hay más movimientos! GAME OVER.");
+                endGame("Ã‚Â¡No hay mÃƒÂ¡s movimientos! GAME OVER.");
             }
         }
     }
@@ -763,7 +776,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         shuffleCount--;
         const btnShuffle = document.getElementById("btn-shuffle");
-        btnShuffle.innerText = `⚡\nMezclar\n(${shuffleCount})`;
+        btnShuffle.innerText = `Ã¢Å¡Â¡\nMezclar\n(${shuffleCount})`;
         if (shuffleCount === 0) {
             btnShuffle.disabled = true;
             btnShuffle.style.opacity = "0.5";
@@ -784,12 +797,27 @@ document.addEventListener("DOMContentLoaded", () => {
         body.classList.add("shake");
         thunder.classList.add("active");
         
-        // Disable board briefly
+        // --- VISUAL JUICE: Tornado Shuffle & Shake ---
         boardEl.style.pointerEvents = "none";
+        triggerShake();
+        const unmatchedTiles = tiles.filter(t => !t.matched);
+        const centerX = boardEl.offsetWidth / 2 - 30; // 30 is approx half tile width
+        const centerY = boardEl.offsetHeight / 2 - 40; // 40 is approx half tile height
         
+        unmatchedTiles.forEach(t => {
+            // Save original position
+            t.origLeft = t.el.style.left;
+            t.origTop = t.el.style.top;
+            
+            // Suck into center
+            t.el.style.left = centerX + "px";
+            t.el.style.top = centerY + "px";
+            t.el.classList.add("tornado");
+        });
+        
+        // Wait for tornado animation to reach center (600ms)
         setTimeout(() => {
-            // Perform the shuffle while the screen is flashed!
-            const unmatchedTiles = tiles.filter(t => !t.matched);
+            // Perform the shuffle logic while they are hidden/small
             let valid = false;
             let attempts = 0;
             
@@ -804,20 +832,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 attempts++;
             }
             
+            // Reassign images based on new IDs
             unmatchedTiles.forEach(t => {
                 t.el.querySelector("img").src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${t.id}.png`;
             });
             
+            // Release the tornado (send them back to their spots)
+            unmatchedTiles.forEach(t => {
+                t.el.classList.remove("tornado");
+                t.el.style.left = t.origLeft;
+                t.el.style.top = t.origTop;
+            });
+            
             updateTileStates();
             checkWinLose(); // updates moves count
-        }, 300);
+        }, 600);
         
         setTimeout(() => {
             pikachu.classList.remove("active");
             body.classList.remove("shake");
             thunder.classList.remove("active");
             boardEl.style.pointerEvents = "auto";
-        }, 600);
+        }, 1200); // Wait for them to fly back out!
     }
 
     // --- Immersive Zoom on Scroll & Slider ---
@@ -878,4 +914,171 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 400);
         }, 3000);
     }, { passive: false });
+
+    function triggerShake() {
+        document.body.classList.remove("shake");
+        void document.body.offsetWidth;
+        document.body.classList.add("shake");
+        setTimeout(() => document.body.classList.remove("shake"), 400);
+    }
+
+    function spawnParticles(x, y) {
+        const numParticles = 12;
+        for (let i = 0; i < numParticles; i++) {
+            const p = document.createElement("div");
+            p.className = "particle";
+            p.style.left = x + "px";
+            p.style.top = y + "px";
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = Math.random() * 80 + 40;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance;
+            
+            document.body.appendChild(p);
+            
+            requestAnimationFrame(() => {
+                p.style.transform = "translate(" + tx + "px, " + ty + "px) scale(0)";
+                p.style.opacity = "0";
+            });
+            
+            setTimeout(() => p.remove(), 800);
+        }
+    }
+
+    function spawnFloatingCombo(comboCount, x, y) {
+        if (comboCount < 2) return;
+        
+        const floaty = document.createElement("div");
+        floaty.className = "floating-combo";
+        
+        let texts = ["", "", "Â¡COMBO x2!", "Â¡RÃFAGA x3!", "Â¡SÃšPER x4!", "Â¡BRUTAL x5!"];
+        floaty.innerText = texts[Math.min(comboCount, texts.length - 1)] || "Â¡DIOS x" + comboCount + "!";
+        
+        floaty.style.left = x + "px";
+        floaty.style.top = y + "px";
+        
+        document.body.appendChild(floaty);
+        setTimeout(() => floaty.remove(), 1000);
+    }
+
+
+    function spawnZzz() {
+        const unmatched = tiles.filter(t => !t.matched && t.free);
+        if (unmatched.length === 0) return;
+        const target = unmatched[Math.floor(Math.random() * unmatched.length)];
+        const rect = target.el.getBoundingClientRect();
+        
+        const zzz = document.createElement("div");
+        zzz.innerText = "Zzz...";
+        zzz.className = "zzz-particle";
+        zzz.style.left = (rect.left + rect.width/2) + "px";
+        zzz.style.top = (rect.top - 10) + "px";
+        document.body.appendChild(zzz);
+        
+        setTimeout(() => zzz.remove(), 2500);
+    }
+
+    function triggerTeamRocketTaunt(level) {
+        if (level === 1) {
+            // Meowth Taunt
+            const meowthEl = document.getElementById("meowth-taunt");
+            if (meowthEl) {
+                meowthEl.style.top = (Math.random() * 60 + 20) + "vh";
+                meowthEl.style.left = (Math.random() * 60 + 20) + "vw";
+                meowthEl.classList.add("peek");
+                
+                // Allow interaction
+                meowthEl.style.pointerEvents = "auto";
+                meowthEl.onclick = () => {
+                    meowthEl.classList.add("blast-off");
+                    setTimeout(() => {
+                        meowthEl.classList.remove("peek");
+                        meowthEl.classList.remove("blast-off");
+                        meowthEl.style.pointerEvents = "none";
+                    }, 1000);
+                };
+
+                setTimeout(() => {
+                    if (meowthEl.classList.contains("peek") && !meowthEl.classList.contains("blast-off")) {
+                        meowthEl.classList.remove("peek");
+                        meowthEl.style.pointerEvents = "none";
+                    }
+                    lastMeowthTauntTime = Date.now();
+                    meowthTaunting = false;
+                }, 3500);
+            }
+        } else if (level === 2) {
+            // Wobbuffet
+            let wobb = document.createElement("img");
+            wobb.src = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/202.gif";
+            wobb.className = "team-rocket-wobbuffet";
+            document.body.appendChild(wobb);
+            
+            setTimeout(() => {
+                wobb.classList.add("peek");
+                setTimeout(() => {
+                    wobb.classList.remove("peek");
+                    setTimeout(() => wobb.remove(), 1000);
+                    lastMeowthTauntTime = Date.now();
+                    meowthTaunting = false;
+                }, 3000);
+            }, 100);
+        } else if (level === 3) {
+            // Jessie & James
+            let jj = document.createElement("img");
+            jj.src = "https://i.makeagif.com/media/4-04-2014/gUa3XE.gif";
+            jj.className = "team-rocket-jj";
+            document.body.appendChild(jj);
+            
+            let jjText = document.createElement("div");
+            jjText.innerText = "¡PREPÁRENSE PARA LOS PROBLEMAS!";
+            jjText.className = "team-rocket-jj-text";
+            document.body.appendChild(jjText);
+            
+            setTimeout(() => {
+                jj.classList.add("peek");
+                jjText.classList.add("peek");
+                setTimeout(() => {
+                    jj.classList.remove("peek");
+                    jjText.classList.remove("peek");
+                    setTimeout(() => { jj.remove(); jjText.remove(); }, 1000);
+                    lastMeowthTauntTime = Date.now();
+                    meowthTaunting = false;
+                }, 4000);
+            }, 100);
+        } else {
+            // Pay Day Hint
+            let coin = document.createElement("div");
+            coin.className = "pay-day-coin";
+            
+            // find a pair
+            const pairs = findPairs();
+            if (pairs.length > 0) {
+                const pair = pairs[0];
+                const rect = pair[0].el.getBoundingClientRect();
+                coin.style.left = (rect.left + rect.width/2) + "px";
+                coin.style.top = (rect.top - 50) + "px";
+                document.body.appendChild(coin);
+                
+                setTimeout(() => {
+                    coin.style.transform = "translateY(50px) rotateY(720deg)";
+                    pair[0].el.classList.add("hint");
+                    pair[1].el.classList.add("hint");
+                }, 100);
+                
+                setTimeout(() => {
+                    coin.remove();
+                    pair[0].el.classList.remove("hint");
+                    pair[1].el.classList.remove("hint");
+                    lastMeowthTauntTime = Date.now();
+                    meowthTaunting = false;
+                }, 3000);
+            } else {
+                lastMeowthTauntTime = Date.now();
+                meowthTaunting = false;
+            }
+        }
+    }
+
 });
