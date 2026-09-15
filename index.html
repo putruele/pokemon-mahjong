@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Mahjong Solitaire</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <div id="header">
+            <h1>Pokémon Mahjong</h1>
+            <div class="stats">
+                <span>Fichas: <span id="tiles-left">144</span></span>
+                <span style="margin-left: 20px;">Movimientos: <span id="moves-left">?</span></span>
+                <span style="margin-left: 20px; color: #fff;">Tiempo: <span id="timer" style="color:#ffcb05;">00:00</span></span>
+                
+                <select id="difficulty-select" style="margin-left: 20px;">
+                    <option value="easy">Fácil (18 Pokémon)</option>
+                    <option value="medium" selected>Medio (36 Pokémon)</option>
+                    <option value="hard">Difícil (72 Pokémon)</option>
+                </select>
+
+                <select id="layout-select">
+                    <option value="classic" selected>La Clásica (Tortuga)</option>
+                    <option value="pyramid">Pirámide</option>
+                    <option value="wall">El Gran Muro</option>
+                    <option value="temple">Templo Azteca</option>
+                    <option value="arena">La Arena</option>
+                    <option value="bridge">El Puente</option>
+                    <option value="butterfly">La Mariposa</option>
+                    <option value="cross">La Cruz</option>
+                    <option value="diamond">El Diamante</option>
+                </select>
+                <button id="btn-restart">🔄<br>Reset</button>
+                <button id="btn-shuffle">⚡ Mezclar</button>
+            </div>
+        </div>
+        <div id="board-wrapper">
+            <div id="zoom-control">
+                <span class="zoom-icon">🔍+</span>
+                <div id="zoom-slider-container">
+                    <input type="range" id="board-zoom" min="0.4" max="2.0" step="0.05" value="1">
+                </div>
+                <span class="zoom-icon">🔍-</span>
+            </div>
+            <div id="board"></div>
+        </div>
+        
+        <div id="message-overlay" class="hidden">
+            <h2 id="message-title">¡Has Ganado!</h2>
+            <button id="btn-play-again">Jugar de nuevo</button>
+        </div>
+
+        <!-- Epic Win Overlay -->
+        <div id="win-overlay" class="hidden">
+            <div id="win-bouncers-container"></div>
+            <div id="win-content">
+                <h1 id="win-title">YOU WIN!</h1>
+                <h2 id="win-time">TIEMPO: 00:00</h2>
+                <button id="btn-win-play-again">¡Jugar de Nuevo!</button>
+            </div>
+        </div>
+
+        <!-- Team Rocket Game Over Overlay -->
+        <div id="rocket-overlay">
+            <img src="https://i.makeagif.com/media/4-04-2014/gUa3XE.gif" alt="Team Rocket">
+            <div id="rocket-text">¡El Equipo Rocket ataca de nuevo!</div>
+        </div>
+
+        <!-- Combo Overlay -->
+        <div id="combo-overlay">
+            <div id="combo-text"></div>
+            <img id="combo-img" src="" alt="">
+        </div>
+
+        <!-- Meowth Taunt -->
+        <img id="meowth-taunt" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/52.gif" alt="Meowth">
+        
+        <!-- Arcade Pikachu Thunder -->
+        <div id="thunder-overlay"></div>
+        <img id="pikachu-thunder" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" alt="Pikachu Thunder">
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
