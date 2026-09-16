@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+﻿document.addEventListener("DOMContentLoaded", () => {
     const boardEl = document.getElementById("board");
     const tilesLeftEl = document.getElementById("tiles-left");
     const btnRestart = document.getElementById("btn-restart");
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
         idleLevel = 0;
         shuffleCount = 2;
         
-        btnShuffle.innerText = `ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â¡\nMezclar\n(${shuffleCount})`;
+        btnShuffle.innerText = `ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡\nMezclar\n(${shuffleCount})`;
         btnShuffle.disabled = false;
         btnShuffle.style.opacity = "1";
         
@@ -613,7 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     t.el.classList.add("matched-animated");
                     sel.el.classList.add("matched-animated");
                     
-                    // Play the PokÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mon's unique cry!
+                    // Play the PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon's unique cry!
                     const cryAudio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${t.id}.ogg`);
                     cryAudio.volume = 0.5;
                     cryAudio.play().catch(e => console.log("Audio prevented by browser:", e));
@@ -685,10 +685,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 rocketOverlay.classList.add("active");
                 setTimeout(() => {
                     rocketOverlay.classList.remove("active");
-                    endGame("ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡No hay mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡s movimientos! GAME OVER.");
+                    endGame("ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡No hay mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s movimientos! GAME OVER.");
                 }, 4500);
             } else {
-                endGame("ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡No hay mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡s movimientos! GAME OVER.");
+                endGame("ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡No hay mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s movimientos! GAME OVER.");
             }
         }
     }
@@ -809,7 +809,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         shuffleCount--;
         const btnShuffle = document.getElementById("btn-shuffle");
-        btnShuffle.innerText = `ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â¡\nMezclar\n(${shuffleCount})`;
+        btnShuffle.innerText = `ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡\nMezclar\n(${shuffleCount})`;
         if (shuffleCount === 0) {
             btnShuffle.disabled = true;
             btnShuffle.style.opacity = "0.5";
@@ -984,8 +984,8 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const floaty = document.createElement("div");
         floaty.className = "floating-combo";
-        let texts = ["", "", "Ã‚Â¡COMBO x2!", "Ã‚Â¡RÃƒÂFAGA x3!", "Ã‚Â¡SÃƒÅ¡PER x4!", "Ã‚Â¡BRUTAL x5!"];
-        floaty.innerText = texts[Math.min(comboCount, texts.length - 1)] || "Ã‚Â¡DIOS x" + comboCount + "!";
+        let texts = ["", "", "Ãƒâ€šÃ‚Â¡COMBO x2!", "Ãƒâ€šÃ‚Â¡RÃƒÆ’Ã‚ÂFAGA x3!", "Ãƒâ€šÃ‚Â¡SÃƒÆ’Ã…Â¡PER x4!", "Ãƒâ€šÃ‚Â¡BRUTAL x5!"];
+        floaty.innerText = texts[Math.min(comboCount, texts.length - 1)] || "Ãƒâ€šÃ‚Â¡DIOS x" + comboCount + "!";
         
         floaty.style.left = x + "px";
         floaty.style.top = y + "px";
@@ -1236,7 +1236,7 @@ document.addEventListener("DOMContentLoaded", () => {
         lbBody.innerHTML = "";
         
         if (scores.length === 0) {
-            lbBody.innerHTML = "<tr><td colspan='3'>NO HAY PUNTAJES AÚN</td></tr>";
+            lbBody.innerHTML = "<tr><td colspan='3'>NO HAY PUNTAJES AÃšN</td></tr>";
             return;
         }
 
@@ -1295,5 +1295,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Populate leaderboard on initial load
     renderLeaderboard();
+    const startScreenOverlay = document.getElementById("start-screen-overlay");
+    const btnStartGame = document.getElementById("btn-start-game");
+    if (btnStartGame) {
+        btnStartGame.addEventListener("click", () => {
+            startScreenOverlay.classList.add("hidden");
+            initGame();
+        });
+    }
 });
-
