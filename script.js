@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
     const boardEl = document.getElementById("board");
     const tilesLeftEl = document.getElementById("tiles-left");
     const btnRestart = document.getElementById("btn-restart");
@@ -1292,4 +1292,8 @@
         btnSaveScore.disabled = false;
         btnSaveScore.innerText = "GUARDAR";
     };
+
+    // Populate leaderboard on initial load
+    renderLeaderboard();
 });
+
