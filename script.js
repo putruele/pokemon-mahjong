@@ -1151,7 +1151,7 @@
     }
 
 
-    // --- LEADERBOARD LOGIC ---
+    // --- LEADERBOARD LOGIC (GLOBAL) ---
     const lbOverlay = document.getElementById("leaderboard-overlay");
     const hsOverlay = document.getElementById("highscore-entry-overlay");
     const btnLeaderboard = document.getElementById("btn-leaderboard");
@@ -1161,38 +1161,78 @@
     const lbDiffSelect = document.getElementById("lb-difficulty");
     const lbLayoutSelect = document.getElementById("lb-layout");
     const hsInitialsInput = document.getElementById("hs-initials");
-    
-    // Check if new score qualifies for Top 10
+
+    const PUBLIC_KEY = '66e827178f40bb1168f6a911';
+    const PRIVATE_KEY = 'tQ6JgX4170aM2x4m_4C1LAvY0O2pXm7UOh7yG4xT4CmA';
+
+    // Format for Dreamlo name: INITIALS_LAYOUT_DIFF
+    // e.g. "MAT_classic_medium"
+
     function isHighScore(timeSeconds, layout, diff) {
-        const scores = getScores(layout, diff);
-        if (scores.length < 10) return true;
-        return timeSeconds < scores[scores.length - 1].time;
+        // Since we fetch async from Dreamlo, we'll just allow ANY win to open the High Score screen.
+        // It's a global leaderboard so any time can be submitted, we'll let Dreamlo sort it.
+        return true;
     }
 
-    function getScores(layout, diff) {
-        const key = \pkmhj_scores_\_\\;
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : [];
+    async function getScores(layout, diff) {
+        try {
+            // Add a timestamp to bypass caching
+            const res = await fetch(`https://www.dreamlo.com/lb/${PUBLIC_KEY}/json?` + Date.now());
+            const data = await res.json();
+            
+            let allScores = [];
+            if (data.dreamlo && data.dreamlo.leaderboard && data.dreamlo.leaderboard.entry) {
+                if (Array.isArray(data.dreamlo.leaderboard.entry)) {
+                    allScores = data.dreamlo.leaderboard.entry;
+                } else {
+                    allScores = [data.dreamlo.leaderboard.entry]; // single object
+                }
+            }
+
+            // Filter for this specific layout & difficulty
+            const suffix = `_${layout}_${diff}`;
+            let filtered = allScores.filter(s => s.name.endsWith(suffix));
+            
+            // Map back to our format
+            return filtered.map(s => {
+                return {
+                    name: s.name.split('_')[0], // Get initials
+                    time: parseInt(s.seconds) // Dreamlo stores seconds parameter as seconds
+                };
+            }).sort((a, b) => a.time - b.time).slice(0, 10); // Sort asc by time! (lower is better)
+            
+        } catch (e) {
+            console.error("Error loading scores", e);
+            return [];
+        }
     }
 
     function saveScore(initials, timeSeconds, layout, diff) {
-        const scores = getScores(layout, diff);
-        scores.push({ name: initials.toUpperCase() || "???", time: timeSeconds });
-        scores.sort((a, b) => a.time - b.time);
-        if (scores.length > 10) scores.pop(); // Keep only top 10
-        localStorage.setItem(\pkmhj_scores_\_\\, JSON.stringify(scores));
+        const fullName = `${initials}_${layout}_${diff}`;
+        
+        // We use fetch. Dreamlo sorts by score DESCENDING by default (higher is better). 
+        // But for time, lower is better. Since Dreamlo supports an extra parameter for seconds,
+        // we can pass score=0 and seconds=timeSeconds. We will just sort locally in getScores!
+        // Format: /lb/private_key/add/name/score/seconds
+        const url = `https://www.dreamlo.com/lb/${PRIVATE_KEY}/add/${fullName}/0/${timeSeconds}`;
+        
+        // Return the fetch promise
+        return fetch(url).catch(e => console.error("Error saving score", e));
     }
 
     function formatTime(totalSeconds) {
         let m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
         let s = (totalSeconds % 60).toString().padStart(2, '0');
-        return \\:\\;
+        return `${m}:${s}`;
     }
 
-    function renderLeaderboard() {
+    async function renderLeaderboard() {
+        lbBody.innerHTML = "<tr><td colspan='3'>Cargando internet...</td></tr>";
+        
         const layout = lbLayoutSelect.value;
         const diff = lbDiffSelect.value;
-        const scores = getScores(layout, diff);
+        
+        const scores = await getScores(layout, diff);
         lbBody.innerHTML = "";
         
         if (scores.length === 0) {
@@ -1202,11 +1242,11 @@
 
         scores.forEach((score, index) => {
             const tr = document.createElement("tr");
-            tr.innerHTML = \
-                <td>#\</td>
-                <td>\</td>
-                <td>\</td>
-            \;
+            tr.innerHTML = `
+                <td>#${index + 1}</td>
+                <td>${score.name}</td>
+                <td>${formatTime(score.time)}</td>
+            `;
             lbBody.appendChild(tr);
         });
     }
@@ -1225,24 +1265,31 @@
     lbLayoutSelect.addEventListener("change", renderLeaderboard);
     lbDiffSelect.addEventListener("change", renderLeaderboard);
 
-    // Save score button
-    btnSaveScore.addEventListener("click", () => {
-        const initials = hsInitialsInput.value.substring(0, 3);
-        const layout = document.getElementById("layout-select").value;
-        const diff = document.getElementById("difficulty-select").value;
-        saveScore(initials, secondsElapsed, layout, diff);
-        hsOverlay.classList.add("hidden");
-        
-        // Show epic win again or directly show leaderboard
-        lbLayoutSelect.value = layout;
-        lbDiffSelect.value = diff;
-        renderLeaderboard();
-        lbOverlay.classList.remove("hidden");
-    });
-
     // Enforce 3 chars limit visually and auto-uppercase
     hsInitialsInput.addEventListener("input", (e) => {
         e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().substring(0, 3);
     });
 
+    // Replace the old saveScore event listener to be async
+    btnSaveScore.onclick = async () => {
+        btnSaveScore.disabled = true;
+        btnSaveScore.innerText = "GUARDANDO...";
+
+        const initials = hsInitialsInput.value.substring(0, 3) || "AAA";
+        const layout = document.getElementById("layout-select").value;
+        const diff = document.getElementById("difficulty-select").value;
+        
+        await saveScore(initials, secondsElapsed, layout, diff);
+        
+        hsOverlay.classList.add("hidden");
+        
+        lbLayoutSelect.value = layout;
+        lbDiffSelect.value = diff;
+        
+        lbOverlay.classList.remove("hidden");
+        await renderLeaderboard();
+        
+        btnSaveScore.disabled = false;
+        btnSaveScore.innerText = "GUARDAR";
+    };
 });
