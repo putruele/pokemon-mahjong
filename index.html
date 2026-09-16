@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PokÃ©mon Mahjong Solitaire</title>
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=3">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -91,7 +91,7 @@
                 <!-- Start Screen Overlay -->
         <div id="start-screen-overlay">
             <img src="start_screen.jpg" id="start-screen-img" alt="Pokemon Mahjong Masters" />
-            <button id="btn-start-game" class="arcade-btn blink">🪙 INSERT COIN / JUGAR</button>
+            <button id="btn-start-game" class="arcade-btn blink" onclick="document.getElementById('start-screen-overlay').style.display='none'; document.getElementById('start-screen-overlay').classList.add('hidden');">🪙 INSERT COIN / JUGAR</button>
         </div>
 
         <!-- Leaderboard Overlay -->
@@ -135,7 +135,7 @@
         <div id="thunder-overlay"></div>
         <img id="pikachu-thunder" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" alt="Pikachu Thunder">
     </div>
-    <script src="script.js?v=2"></script>
+    <script src="script.js?v=3"></script>
 </body>
 </html>
 

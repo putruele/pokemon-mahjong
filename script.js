@@ -1293,18 +1293,21 @@ document.addEventListener("DOMContentLoaded", () => {
         btnSaveScore.innerText = "GUARDAR";
     };
 
-    // Populate leaderboard on initial load
-    renderLeaderboard();
     const startScreenOverlay = document.getElementById("start-screen-overlay");
     const btnStartGame = document.getElementById("btn-start-game");
     if (btnStartGame) {
         btnStartGame.addEventListener("click", () => {
-            console.log("Start game clicked!");
-            startScreenOverlay.classList.add("hidden");
-            // initGame() was already called on load at line 35, 
-            // so we don't need to call it again unless we want to reset it.
-            // Let's call it just in case the layout changed.
+            if (startScreenOverlay) {
+                startScreenOverlay.classList.add("hidden");
+                startScreenOverlay.style.display = "none";
+            }
             initGame();
         });
+    }
+
+    try {
+        renderLeaderboard();
+    } catch (e) {
+        console.error("Leaderboard render error:", e);
     }
 });
