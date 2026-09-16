@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+﻿document.addEventListener("DOMContentLoaded", () => {
     const boardEl = document.getElementById("board");
     const tilesLeftEl = document.getElementById("tiles-left");
     const btnRestart = document.getElementById("btn-restart");
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
         idleLevel = 0;
         shuffleCount = 2;
         
-        btnShuffle.innerText = `ÃƒÂ¢Ã…Â¡Ã‚Â¡\nMezclar\n(${shuffleCount})`;
+        btnShuffle.innerText = `ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â¡\nMezclar\n(${shuffleCount})`;
         btnShuffle.disabled = false;
         btnShuffle.style.opacity = "1";
         
@@ -613,7 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     t.el.classList.add("matched-animated");
                     sel.el.classList.add("matched-animated");
                     
-                    // Play the PokÃƒÆ’Ã‚Â©mon's unique cry!
+                    // Play the PokÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mon's unique cry!
                     const cryAudio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${t.id}.ogg`);
                     cryAudio.volume = 0.5;
                     cryAudio.play().catch(e => console.log("Audio prevented by browser:", e));
@@ -685,10 +685,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 rocketOverlay.classList.add("active");
                 setTimeout(() => {
                     rocketOverlay.classList.remove("active");
-                    endGame("Ãƒâ€šÃ‚Â¡No hay mÃƒÆ’Ã‚Â¡s movimientos! GAME OVER.");
+                    endGame("ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡No hay mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡s movimientos! GAME OVER.");
                 }, 4500);
             } else {
-                endGame("Ãƒâ€šÃ‚Â¡No hay mÃƒÆ’Ã‚Â¡s movimientos! GAME OVER.");
+                endGame("ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡No hay mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡s movimientos! GAME OVER.");
             }
         }
     }
@@ -740,6 +740,24 @@ document.addEventListener("DOMContentLoaded", () => {
             cancelAnimationFrame(winAnimFrame);
             initGame();
         };
+
+        // --- HIGHSCORE CHECK ---
+        const layout = document.getElementById("layout-select").value;
+        const diff = document.getElementById("difficulty-select").value;
+        if (isHighScore(secondsElapsed, layout, diff)) {
+            // Hide the epic win temporarily while entering name
+            winOverlay.classList.add("hidden");
+            const hsOverlay = document.getElementById("highscore-entry-overlay");
+            const timeDisp = document.getElementById("hs-time-display");
+            timeDisp.innerText = formatTime(secondsElapsed);
+            
+            // clear old input
+            const hsInput = document.getElementById("hs-initials");
+            hsInput.value = "";
+            
+            hsOverlay.classList.remove("hidden");
+            hsInput.focus();
+        }
     }
 
     function endGame(msg) {
@@ -791,7 +809,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         shuffleCount--;
         const btnShuffle = document.getElementById("btn-shuffle");
-        btnShuffle.innerText = `ÃƒÂ¢Ã…Â¡Ã‚Â¡\nMezclar\n(${shuffleCount})`;
+        btnShuffle.innerText = `ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â¡\nMezclar\n(${shuffleCount})`;
         if (shuffleCount === 0) {
             btnShuffle.disabled = true;
             btnShuffle.style.opacity = "0.5";
@@ -966,8 +984,8 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const floaty = document.createElement("div");
         floaty.className = "floating-combo";
-        let texts = ["", "", "Â¡COMBO x2!", "Â¡RÃFAGA x3!", "Â¡SÃšPER x4!", "Â¡BRUTAL x5!"];
-        floaty.innerText = texts[Math.min(comboCount, texts.length - 1)] || "Â¡DIOS x" + comboCount + "!";
+        let texts = ["", "", "Ã‚Â¡COMBO x2!", "Ã‚Â¡RÃƒÂFAGA x3!", "Ã‚Â¡SÃƒÅ¡PER x4!", "Ã‚Â¡BRUTAL x5!"];
+        floaty.innerText = texts[Math.min(comboCount, texts.length - 1)] || "Ã‚Â¡DIOS x" + comboCount + "!";
         
         floaty.style.left = x + "px";
         floaty.style.top = y + "px";
@@ -1131,5 +1149,100 @@ document.addEventListener("DOMContentLoaded", () => {
         
         return assignedIds;
     }
+
+
+    // --- LEADERBOARD LOGIC ---
+    const lbOverlay = document.getElementById("leaderboard-overlay");
+    const hsOverlay = document.getElementById("highscore-entry-overlay");
+    const btnLeaderboard = document.getElementById("btn-leaderboard");
+    const btnCloseLeaderboard = document.getElementById("btn-close-leaderboard");
+    const btnSaveScore = document.getElementById("btn-save-score");
+    const lbBody = document.getElementById("leaderboard-body");
+    const lbDiffSelect = document.getElementById("lb-difficulty");
+    const lbLayoutSelect = document.getElementById("lb-layout");
+    const hsInitialsInput = document.getElementById("hs-initials");
+    
+    // Check if new score qualifies for Top 10
+    function isHighScore(timeSeconds, layout, diff) {
+        const scores = getScores(layout, diff);
+        if (scores.length < 10) return true;
+        return timeSeconds < scores[scores.length - 1].time;
+    }
+
+    function getScores(layout, diff) {
+        const key = \pkmhj_scores_\_\\;
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : [];
+    }
+
+    function saveScore(initials, timeSeconds, layout, diff) {
+        const scores = getScores(layout, diff);
+        scores.push({ name: initials.toUpperCase() || "???", time: timeSeconds });
+        scores.sort((a, b) => a.time - b.time);
+        if (scores.length > 10) scores.pop(); // Keep only top 10
+        localStorage.setItem(\pkmhj_scores_\_\\, JSON.stringify(scores));
+    }
+
+    function formatTime(totalSeconds) {
+        let m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+        let s = (totalSeconds % 60).toString().padStart(2, '0');
+        return \\:\\;
+    }
+
+    function renderLeaderboard() {
+        const layout = lbLayoutSelect.value;
+        const diff = lbDiffSelect.value;
+        const scores = getScores(layout, diff);
+        lbBody.innerHTML = "";
+        
+        if (scores.length === 0) {
+            lbBody.innerHTML = "<tr><td colspan='3'>NO HAY PUNTAJES AÚN</td></tr>";
+            return;
+        }
+
+        scores.forEach((score, index) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = \
+                <td>#\</td>
+                <td>\</td>
+                <td>\</td>
+            \;
+            lbBody.appendChild(tr);
+        });
+    }
+
+    btnLeaderboard.addEventListener("click", () => {
+        lbLayoutSelect.value = document.getElementById("layout-select").value;
+        lbDiffSelect.value = document.getElementById("difficulty-select").value;
+        renderLeaderboard();
+        lbOverlay.classList.remove("hidden");
+    });
+
+    btnCloseLeaderboard.addEventListener("click", () => {
+        lbOverlay.classList.add("hidden");
+    });
+
+    lbLayoutSelect.addEventListener("change", renderLeaderboard);
+    lbDiffSelect.addEventListener("change", renderLeaderboard);
+
+    // Save score button
+    btnSaveScore.addEventListener("click", () => {
+        const initials = hsInitialsInput.value.substring(0, 3);
+        const layout = document.getElementById("layout-select").value;
+        const diff = document.getElementById("difficulty-select").value;
+        saveScore(initials, secondsElapsed, layout, diff);
+        hsOverlay.classList.add("hidden");
+        
+        // Show epic win again or directly show leaderboard
+        lbLayoutSelect.value = layout;
+        lbDiffSelect.value = diff;
+        renderLeaderboard();
+        lbOverlay.classList.remove("hidden");
+    });
+
+    // Enforce 3 chars limit visually and auto-uppercase
+    hsInitialsInput.addEventListener("input", (e) => {
+        e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().substring(0, 3);
+    });
 
 });

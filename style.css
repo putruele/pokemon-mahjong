@@ -864,3 +864,112 @@ body.shake {
     transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
+
+
+/* --- LEADERBOARD & HIGH SCORES (Arcade Style) --- */
+#btn-leaderboard {
+    background-color: #ffd700;
+    color: #000;
+    border-bottom: 4px solid #b8860b;
+}
+#btn-leaderboard:active {
+    border-bottom: 0px solid #b8860b;
+    transform: translateY(4px);
+}
+
+#highscore-entry-overlay, #leaderboard-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    color: #39ff14; /* Neon Green */
+    font-family: 'Press Start 2P', cursive;
+    text-shadow: 2px 2px 0 #000;
+}
+
+.arcade-title {
+    color: #ff00ff; /* Neon Pink */
+    font-size: 40px;
+    margin-bottom: 20px;
+    text-shadow: 4px 4px 0px #00ffff;
+}
+
+.blink {
+    animation: blinker 1s linear infinite;
+    color: #fff;
+    margin-bottom: 20px;
+}
+@keyframes blinker {
+    50% { opacity: 0; }
+}
+
+#initials-container input {
+    background: transparent;
+    border: 4px solid #fff;
+    color: #ffcb05;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 60px;
+    width: 180px;
+    text-align: center;
+    text-transform: uppercase;
+    outline: none;
+    margin-bottom: 30px;
+    caret-color: #ffcb05;
+}
+
+.leaderboard-filters {
+    margin-bottom: 20px;
+}
+.leaderboard-filters select {
+    background: #222;
+    color: #fff;
+    border: 2px solid #39ff14;
+    padding: 10px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    margin: 0 10px;
+    outline: none;
+}
+
+#leaderboard-table {
+    border-collapse: collapse;
+    width: 80%;
+    max-width: 600px;
+    margin-bottom: 30px;
+    background: rgba(0,255,0,0.1);
+    border: 2px solid #39ff14;
+}
+#leaderboard-table th, #leaderboard-table td {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 2px solid #222;
+}
+#leaderboard-table th {
+    background: #39ff14;
+    color: #000;
+    text-shadow: none;
+}
+#leaderboard-table tr:nth-child(1) td { color: #ffd700; font-size: 20px; } /* Gold */
+#leaderboard-table tr:nth-child(2) td { color: #c0c0c0; } /* Silver */
+#leaderboard-table tr:nth-child(3) td { color: #cd7f32; } /* Bronze */
+
+#btn-save-score, #btn-close-leaderboard {
+    background: #ff00ff;
+    color: #fff;
+    border: 4px solid #fff;
+    padding: 15px 30px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #00ffff;
+    transition: transform 0.1s;
+}
+#btn-save-score:active, #btn-close-leaderboard:active {
+    transform: translate(4px, 4px);
+    box-shadow: 0px 0px 0 #00ffff;
+}
+
