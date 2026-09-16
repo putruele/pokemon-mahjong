@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
     const boardEl = document.getElementById("board");
     const tilesLeftEl = document.getElementById("tiles-left");
     const btnRestart = document.getElementById("btn-restart");
@@ -1299,7 +1299,11 @@
     const btnStartGame = document.getElementById("btn-start-game");
     if (btnStartGame) {
         btnStartGame.addEventListener("click", () => {
+            console.log("Start game clicked!");
             startScreenOverlay.classList.add("hidden");
+            // initGame() was already called on load at line 35, 
+            // so we don't need to call it again unless we want to reset it.
+            // Let's call it just in case the layout changed.
             initGame();
         });
     }
