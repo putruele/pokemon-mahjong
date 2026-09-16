@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
         idleLevel = 0;
         shuffleCount = 2;
         
-        btnShuffle.innerText = `ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡\nMezclar\n(${shuffleCount})`;
+        btnShuffle.innerText = `⚡\nMezclar\n(${shuffleCount})`;
         btnShuffle.disabled = false;
         btnShuffle.style.opacity = "1";
         
@@ -809,7 +809,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         shuffleCount--;
         const btnShuffle = document.getElementById("btn-shuffle");
-        btnShuffle.innerText = `ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡\nMezclar\n(${shuffleCount})`;
+        btnShuffle.innerText = `⚡\nMezclar\n(${shuffleCount})`;
         if (shuffleCount === 0) {
             btnShuffle.disabled = true;
             btnShuffle.style.opacity = "0.5";
