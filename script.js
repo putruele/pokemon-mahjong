@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
         idleLevel = 0;
         shuffleCount = 2;
         
-        btnShuffle.innerText = `Ã¢Å¡Â¡\nMezclar\n(${shuffleCount})`;
+        btnShuffle.innerText = `ÃƒÂ¢Ã…Â¡Ã‚Â¡\nMezclar\n(${shuffleCount})`;
         btnShuffle.disabled = false;
         btnShuffle.style.opacity = "1";
         
@@ -118,11 +118,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const pokemonIds = getPokemonIds(uniqueCount);
         
-        let tileIds = [];
-        pokemonIds.forEach(id => {
-            for(let k=0; k<tileMultiplier; k++) tileIds.push(id);
-        });
-        tileIds = shuffle(tileIds);
+        let tileIds = assignTilesSolvable(layout, pokemonIds, tileMultiplier);
+        if (!tileIds) {
+            // Fallback to random if the algorithm gets stuck (very rare)
+            tileIds = [];
+            pokemonIds.forEach(id => {
+                for(let k=0; k<tileMultiplier; k++) tileIds.push(id);
+            });
+            tileIds = shuffle(tileIds);
+        }
 
         let maxX = 0;
         let maxY = 0;
@@ -609,7 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     t.el.classList.add("matched-animated");
                     sel.el.classList.add("matched-animated");
                     
-                    // Play the PokÃƒÂ©mon's unique cry!
+                    // Play the PokÃƒÆ’Ã‚Â©mon's unique cry!
                     const cryAudio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${t.id}.ogg`);
                     cryAudio.volume = 0.5;
                     cryAudio.play().catch(e => console.log("Audio prevented by browser:", e));
@@ -681,10 +685,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 rocketOverlay.classList.add("active");
                 setTimeout(() => {
                     rocketOverlay.classList.remove("active");
-                    endGame("Ã‚Â¡No hay mÃƒÂ¡s movimientos! GAME OVER.");
+                    endGame("Ãƒâ€šÃ‚Â¡No hay mÃƒÆ’Ã‚Â¡s movimientos! GAME OVER.");
                 }, 4500);
             } else {
-                endGame("Ã‚Â¡No hay mÃƒÂ¡s movimientos! GAME OVER.");
+                endGame("Ãƒâ€šÃ‚Â¡No hay mÃƒÆ’Ã‚Â¡s movimientos! GAME OVER.");
             }
         }
     }
@@ -787,7 +791,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         shuffleCount--;
         const btnShuffle = document.getElementById("btn-shuffle");
-        btnShuffle.innerText = `Ã¢Å¡Â¡\nMezclar\n(${shuffleCount})`;
+        btnShuffle.innerText = `ÃƒÂ¢Ã…Â¡Ã‚Â¡\nMezclar\n(${shuffleCount})`;
         if (shuffleCount === 0) {
             btnShuffle.disabled = true;
             btnShuffle.style.opacity = "0.5";
@@ -962,8 +966,8 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const floaty = document.createElement("div");
         floaty.className = "floating-combo";
-        let texts = ["", "", "¡COMBO x2!", "¡RÁFAGA x3!", "¡SÚPER x4!", "¡BRUTAL x5!"];
-        floaty.innerText = texts[Math.min(comboCount, texts.length - 1)] || "¡DIOS x" + comboCount + "!";
+        let texts = ["", "", "Â¡COMBO x2!", "Â¡RÃFAGA x3!", "Â¡SÃšPER x4!", "Â¡BRUTAL x5!"];
+        floaty.innerText = texts[Math.min(comboCount, texts.length - 1)] || "Â¡DIOS x" + comboCount + "!";
         
         floaty.style.left = x + "px";
         floaty.style.top = y + "px";
@@ -1034,31 +1038,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     meowthTaunting = false;
                 }, 3000);
             }, 100);
-        } else if (level === 3) {
-            // Jessie & James
-            let jj = document.createElement("img");
-            jj.src = "https://i.makeagif.com/media/4-04-2014/gUa3XE.gif";
-            jj.className = "team-rocket-jj";
-            document.body.appendChild(jj);
-            
-            let jjText = document.createElement("div");
-            jjText.innerText = "¡PREPÁRENSE PARA LOS PROBLEMAS!";
-            jjText.className = "team-rocket-jj-text";
-            document.body.appendChild(jjText);
-            
-            setTimeout(() => {
-                jj.classList.add("peek");
-                jjText.classList.add("peek");
-                setTimeout(() => {
-                    jj.classList.remove("peek");
-                    jjText.classList.remove("peek");
-                    setTimeout(() => { jj.remove(); jjText.remove(); }, 1000);
-                    lastMeowthTauntTime = Date.now();
-                    meowthTaunting = false;
-                }, 4000);
-            }, 100);
         } else {
-            // Pay Day Hint
+            // Pay Day Hint (Now Level 3+)
             let coin = document.createElement("div");
             coin.className = "pay-day-coin";
             
@@ -1091,5 +1072,64 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-});
 
+    function assignTilesSolvable(layout, pokemonIds, tileMultiplier) {
+        let availablePairs = [];
+        pokemonIds.forEach(id => {
+            for(let k=0; k<tileMultiplier/2; k++) availablePairs.push(id);
+        });
+        availablePairs = shuffle(availablePairs); // 72 pairs
+
+        let mockBoard = layout.map((pos, i) => ({ ...pos, index: i, removed: false }));
+        
+        function getFreeMockTiles() {
+            return mockBoard.filter(t => {
+                if (t.removed) return false;
+                let leftBlocked = false;
+                let rightBlocked = false;
+                let topBlocked = false;
+                for (let o of mockBoard) {
+                    if (o.removed || o === t) continue;
+                    if (o.z === t.z && o.y === t.y) {
+                        if (o.x === t.x - 2) leftBlocked = true;
+                        if (o.x === t.x + 2) rightBlocked = true;
+                    }
+                    if (o.z === t.z + 1) {
+                        const dx = Math.abs(o.x - t.x);
+                        const dy = Math.abs(o.y - t.y);
+                        if (dx <= 1 && dy <= 1) topBlocked = true;
+                    }
+                }
+                return !topBlocked && (!leftBlocked || !rightBlocked);
+            });
+        }
+
+        let assignedIds = new Array(layout.length);
+        let pairsAssigned = 0;
+
+        while (pairsAssigned < layout.length / 2) {
+            let freeTiles = getFreeMockTiles();
+            if (freeTiles.length < 2) {
+                return null; // fallback
+            }
+            let idx1 = Math.floor(Math.random() * freeTiles.length);
+            let idx2 = Math.floor(Math.random() * freeTiles.length);
+            while (idx1 === idx2) {
+                idx2 = Math.floor(Math.random() * freeTiles.length);
+            }
+            let t1 = freeTiles[idx1];
+            let t2 = freeTiles[idx2];
+            
+            t1.removed = true;
+            t2.removed = true;
+            
+            let pairId = availablePairs[pairsAssigned];
+            assignedIds[t1.index] = pairId;
+            assignedIds[t2.index] = pairId;
+            pairsAssigned++;
+        }
+        
+        return assignedIds;
+    }
+
+});
