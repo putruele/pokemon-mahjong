@@ -613,7 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     t.el.classList.add("matched-animated");
                     sel.el.classList.add("matched-animated");
                     
-                    // Play the PokÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mon's unique cry!
+                    // Play the Pokémon's unique cry!
                     const cryAudio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${t.id}.ogg`);
                     cryAudio.volume = 0.5;
                     cryAudio.play().catch(e => console.log("Audio prevented by browser:", e));
@@ -685,10 +685,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 rocketOverlay.classList.add("active");
                 setTimeout(() => {
                     rocketOverlay.classList.remove("active");
-                    endGame("ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡No hay mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s movimientos! GAME OVER.");
+                    endGame("¡No hay más movimientos! GAME OVER.");
                 }, 4500);
             } else {
-                endGame("ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡No hay mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s movimientos! GAME OVER.");
+                endGame("¡No hay más movimientos! GAME OVER.");
             }
         }
     }
@@ -984,8 +984,8 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const floaty = document.createElement("div");
         floaty.className = "floating-combo";
-        let texts = ["", "", "Ãƒâ€šÃ‚Â¡COMBO x2!", "Ãƒâ€šÃ‚Â¡RÃƒÆ’Ã‚ÂFAGA x3!", "Ãƒâ€šÃ‚Â¡SÃƒÆ’Ã…Â¡PER x4!", "Ãƒâ€šÃ‚Â¡BRUTAL x5!"];
-        floaty.innerText = texts[Math.min(comboCount, texts.length - 1)] || "Ãƒâ€šÃ‚Â¡DIOS x" + comboCount + "!";
+        let texts = ["", "", "¡COMBO x2!", "¡RÁFAGA x3!", "¡SÚPER x4!", "¡BRUTAL x5!"];
+        floaty.innerText = texts[Math.min(comboCount, texts.length - 1)] || "¡DIOS x" + comboCount + "!";
         
         floaty.style.left = x + "px";
         floaty.style.top = y + "px";
@@ -1236,7 +1236,7 @@ document.addEventListener("DOMContentLoaded", () => {
         lbBody.innerHTML = "";
         
         if (scores.length === 0) {
-            lbBody.innerHTML = "<tr><td colspan='3'>NO HAY PUNTAJES AÃšN</td></tr>";
+            lbBody.innerHTML = "<tr><td colspan='3'>NO HAY PUNTAJES AÚN</td></tr>";
             return;
         }
 
