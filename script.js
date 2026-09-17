@@ -1151,7 +1151,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    // --- LEADERBOARD LOGIC (GLOBAL) ---
+    // --- LEADERBOARD LOGIC (GLOBAL + LOCAL HYBRID) ---
     const lbOverlay = document.getElementById("leaderboard-overlay");
     const hsOverlay = document.getElementById("highscore-entry-overlay");
     const btnLeaderboard = document.getElementById("btn-leaderboard");
@@ -1162,62 +1162,75 @@ document.addEventListener("DOMContentLoaded", () => {
     const lbLayoutSelect = document.getElementById("lb-layout");
     const hsInitialsInput = document.getElementById("hs-initials");
 
-    const PUBLIC_KEY = '66e827178f40bb1168f6a911';
-    const PRIVATE_KEY = 'tQ6JgX4170aM2x4m_4C1LAvY0O2pXm7UOh7yG4xT4CmA';
+    const CLOUD_DB_BASE = "https://mantledb.sh/v2/pokemon-mahjong-masters-global";
 
-    // Format for Dreamlo name: INITIALS_LAYOUT_DIFF
-    // e.g. "MAT_classic_medium"
+    function getLocalScores(layout, diff) {
+        try {
+            const raw = localStorage.getItem(`pm_scores_${layout}_${diff}`);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveLocalScores(layout, diff, scores) {
+        try {
+            localStorage.setItem(`pm_scores_${layout}_${diff}`, JSON.stringify(scores));
+        } catch (e) {}
+    }
 
     function isHighScore(timeSeconds, layout, diff) {
-        // Since we fetch async from Dreamlo, we'll just allow ANY win to open the High Score screen.
-        // It's a global leaderboard so any time can be submitted, we'll let Dreamlo sort it.
         return true;
     }
 
     async function getScores(layout, diff) {
         try {
-            // Add a timestamp to bypass caching
-            const res = await fetch(`https://www.dreamlo.com/lb/${PUBLIC_KEY}/json?` + Date.now());
-            const data = await res.json();
-            
-            let allScores = [];
-            if (data.dreamlo && data.dreamlo.leaderboard && data.dreamlo.leaderboard.entry) {
-                if (Array.isArray(data.dreamlo.leaderboard.entry)) {
-                    allScores = data.dreamlo.leaderboard.entry;
-                } else {
-                    allScores = [data.dreamlo.leaderboard.entry]; // single object
-                }
+            const res = await fetch(`${CLOUD_DB_BASE}/scores_${layout}_${diff}?_t=${Date.now()}`);
+            if (res.status === 404) {
+                return getLocalScores(layout, diff);
             }
-
-            // Filter for this specific layout & difficulty
-            const suffix = `_${layout}_${diff}`;
-            let filtered = allScores.filter(s => s.name.endsWith(suffix));
-            
-            // Map back to our format
-            return filtered.map(s => {
-                return {
-                    name: s.name.split('_')[0], // Get initials
-                    time: parseInt(s.seconds) // Dreamlo stores seconds parameter as seconds
-                };
-            }).sort((a, b) => a.time - b.time).slice(0, 10); // Sort asc by time! (lower is better)
-            
+            if (!res.ok) throw new Error("Cloud fetch failed");
+            const data = await res.json();
+            if (data && Array.isArray(data.scores)) {
+                saveLocalScores(layout, diff, data.scores);
+                return data.scores;
+            }
+            return getLocalScores(layout, diff);
         } catch (e) {
-            console.error("Error loading scores", e);
-            return [];
+            console.warn("Using local scores due to network:", e);
+            return getLocalScores(layout, diff);
         }
     }
 
-    function saveScore(initials, timeSeconds, layout, diff) {
-        const fullName = `${initials}_${layout}_${diff}`;
-        
-        // We use fetch. Dreamlo sorts by score DESCENDING by default (higher is better). 
-        // But for time, lower is better. Since Dreamlo supports an extra parameter for seconds,
-        // we can pass score=0 and seconds=timeSeconds. We will just sort locally in getScores!
-        // Format: /lb/private_key/add/name/score/seconds
-        const url = `https://www.dreamlo.com/lb/${PRIVATE_KEY}/add/${fullName}/0/${timeSeconds}`;
-        
-        // Return the fetch promise
-        return fetch(url).catch(e => console.error("Error saving score", e));
+    async function saveScore(initials, timeSeconds, layout, diff) {
+        let scores = await getScores(layout, diff);
+        if (!Array.isArray(scores)) scores = [];
+
+        scores.push({
+            name: initials.toUpperCase(),
+            time: parseInt(timeSeconds, 10),
+            date: Date.now()
+        });
+
+        // Lower seconds = better rank
+        scores.sort((a, b) => a.time - b.time);
+        scores = scores.slice(0, 10);
+
+        // Always save locally immediately so player never loses their record
+        saveLocalScores(layout, diff, scores);
+
+        // Sync with global cloud database
+        try {
+            await fetch(`${CLOUD_DB_BASE}/scores_${layout}_${diff}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ scores: scores })
+            });
+        } catch (e) {
+            console.error("Cloud save failed, score preserved locally:", e);
+        }
+
+        return scores;
     }
 
     function formatTime(totalSeconds) {
@@ -1227,7 +1240,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function renderLeaderboard() {
-        lbBody.innerHTML = "<tr><td colspan='3'>Cargando internet...</td></tr>";
+        lbBody.innerHTML = "<tr><td colspan='3'>Cargando ranking...</td></tr>";
         
         const layout = lbLayoutSelect.value;
         const diff = lbDiffSelect.value;
@@ -1235,7 +1248,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const scores = await getScores(layout, diff);
         lbBody.innerHTML = "";
         
-        if (scores.length === 0) {
+        if (!scores || scores.length === 0) {
             lbBody.innerHTML = "<tr><td colspan='3'>NO HAY PUNTAJES AÚN</td></tr>";
             return;
         }
@@ -1270,7 +1283,7 @@ document.addEventListener("DOMContentLoaded", () => {
         e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().substring(0, 3);
     });
 
-    // Replace the old saveScore event listener to be async
+    // Save score button listener
     btnSaveScore.onclick = async () => {
         btnSaveScore.disabled = true;
         btnSaveScore.innerText = "GUARDANDO...";
